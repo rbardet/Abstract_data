@@ -177,10 +177,13 @@ namespace ft {
 				this->reserve(new_size);
 			}
 
-			std::cout << this->_M_finish << std::endl;
-			std::cout << this->_M_end_of_storage << std::endl;
 			*this->_M_finish = val;
 			this->_M_finish++;
+		}
+
+		void pop_back () {
+			this->_Alloc.destroy(this->_M_finish - 1);
+			this->_M_finish--;
 		}
 
 		//allocator
