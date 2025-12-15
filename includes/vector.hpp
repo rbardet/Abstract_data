@@ -113,6 +113,23 @@ namespace ft {
 
 			return this->_M_start[n];
 		}
+		
+		reference front() {
+			return *this->_M_start;
+		}
+
+		const_reference front() const {
+			return *this->_M_start;
+		}
+
+
+		reference back() {
+			return *(this->_M_finish - 1);
+		}
+	
+		const_reference back() const {
+			return *(this->_M_finish - 1);
+		}
 
 		protected:
 			pointer _M_start;
