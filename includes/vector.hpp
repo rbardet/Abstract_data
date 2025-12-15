@@ -71,6 +71,7 @@ namespace ft {
 		}
 
 		//iterators
+
 		iterator begin() { return _M_start; }
 		const_iterator begin() const { return _M_start; }
 		iterator end() { return _M_finish; }
@@ -148,6 +149,7 @@ namespace ft {
 
 		void reserve(size_type n) {
 			if (n > this->capacity()) {
+				std::cout << n << " : NNNNNNN" << std::endl;
 				size_type old_size = this->size();
 				pointer new_start = this->_Alloc.allocate(n);
 				pointer new_p = new_start;
@@ -210,11 +212,11 @@ namespace ft {
 		}
 
 		reference back() {
-			return *(this->_M_finish - sizeof(value_type));
+			return *this->_M_finish;
 		}
 	
 		const_reference back() const {
-			return *(this->_M_finish - sizeof(value_type));
+			return *this->_M_finish;
 		}
 
 		value_type* data() {
@@ -236,13 +238,53 @@ namespace ft {
 				this->reserve(new_size);
 			}
 
-			*this->_M_finish = val;
+			this->_Alloc.construct(this->_M_finish, val);
 			this->_M_finish++;
 		}
 
 		void pop_back () {
 			this->_M_finish--;
 			this->_Alloc.destroy(this->_M_finish);
+		}
+
+		iterator erase(iterator position) {
+			iterator it = position;
+			iterator next = position + 1;
+			
+			while (next != this->_M_finish) {
+				*it = *next;
+				next++;
+				it++;
+			}
+
+			this->_M_finish--;
+			this->_Alloc.destroy(this->_M_finish);
+
+			return position;
+		}
+		
+		iterator erase(iterator first, iterator last) {
+			if (first == last)
+				return first;
+
+			iterator it = first;
+			iterator move = last;
+
+			while (it != last) {
+				this->_Alloc.destroy(it);
+				it++;
+			}
+
+			it = first;
+			while (move != this->_M_finish) {
+				this->_Alloc.construct(it, *move);
+				this->_Alloc.destroy(move);
+				it++;
+				move++;
+			}
+
+			this->_M_finish = it;
+			return first;
 		}
 
 		//allocator
