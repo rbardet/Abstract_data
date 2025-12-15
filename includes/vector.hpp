@@ -64,6 +64,10 @@ namespace ft {
 			return this->_M_end_of_storage - this->_M_start;
 		}
 
+		size_type capacity() const {
+			return this->_M_end_of_storage - this->_M_start;
+		}
+
 		//element access
 
 		reference operator[](size_type n) {
