@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <iterator>
 
 // i refer to cpp.com
 // https://cplusplus.com/reference/vector/vector/
@@ -17,6 +18,10 @@ namespace ft {
 			typedef const T& const_reference;
 			typedef T* pointer;
 			typedef const T* const_pointer;
+			typedef pointer iterator;
+			typedef const_pointer const_iterator;
+			typedef std::reverse_iterator<iterator> reverse_iterator;
+			typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 			typedef size_t size_type;
 
 		//constructor
@@ -64,6 +69,17 @@ namespace ft {
 				this->_Alloc.deallocate(this->_M_start, this->capacity());
 			}
 		}
+
+		//iterators
+		//const iterator are not present in cpp98 it seems despite cpp.com saying it does
+		iterator begin() { return _M_start; }
+		const_iterator begin() const { return _M_start; }
+		iterator end() { return _M_finish; }
+		const_iterator end() const { return _M_finish; }
+		reverse_iterator rbegin() { return reverse_iterator(end()); }
+		const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+		reverse_iterator rend() { return reverse_iterator(begin()); }
+		const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
 		//Capacity
 
@@ -151,11 +167,11 @@ namespace ft {
 		}
 
 		reference back() {
-			return *(this->_M_finish - 1);
+			return *(this->_M_finish - sizeof(value_type));
 		}
 	
 		const_reference back() const {
-			return *(this->_M_finish - 1);
+			return *(this->_M_finish - sizeof(value_type));
 		}
 
 		value_type* data() {
@@ -172,7 +188,7 @@ namespace ft {
 			if (this->_M_finish >= this->_M_end_of_storage) {
 				size_type new_size = this->capacity() * 2;
 				if (new_size == 0) {
-					new_size = 2; 
+					new_size = 1;
 				}
 				this->reserve(new_size);
 			}
@@ -182,8 +198,8 @@ namespace ft {
 		}
 
 		void pop_back () {
-			this->_Alloc.destroy(this->_M_finish - 1);
 			this->_M_finish--;
+			this->_Alloc.destroy(this->_M_finish);
 		}
 
 		//allocator
