@@ -38,7 +38,7 @@ namespace ft {
 		_M_start(0), _M_finish(0), _M_end_of_storage(0), _Alloc(alloc)
 		{
 			if (n > 0) {
-				this->_M_start = _Alloc.allocate(n);
+				this->_M_start = this->_Alloc.allocate(n);
 				this->_M_finish = this->_M_start;
 				this->_M_end_of_storage = this->_M_start + n;
 				pointer p = this->_M_start;
@@ -71,7 +71,6 @@ namespace ft {
 		}
 
 		//iterators
-		//const iterator are not present in cpp98 it seems despite cpp.com saying it does
 		iterator begin() { return _M_start; }
 		const_iterator begin() const { return _M_start; }
 		iterator end() { return _M_finish; }
@@ -92,7 +91,51 @@ namespace ft {
 		}
 
 		void resize(size_type n, value_type val = value_type()) {
-			(void)n, val;
+			if (n < this->size()) {
+				pointer p = this->_M_start + n;
+				for (size_type i = n; i < this->size(); i++) {
+					this->_Alloc.destroy(p);
+					*p = 0;
+					p++;
+				}
+
+				this->_M_finish = this->_M_start + n;
+				return ;
+			}
+
+			if (n > this->size()) {
+				if (n > this->capacity()) {
+					size_type old_size = this->size();
+					size_type new_size = old_size * 2;
+					pointer new_start = this->_Alloc.allocate(new_size);
+					pointer p = new_start;
+					pointer old_p = this->_M_start;
+
+					for (size_type i = 0; i < old_size; i++) {
+						this->_Alloc.construct(p, *old_p);
+						old_p++;
+						p++;
+					}
+
+					old_p = this->_M_start;
+					for (size_type i = 0; i < old_size; i++) {
+						this->_Alloc.destroy(old_p);
+						old_p++;
+					}
+
+					if (this->_M_start) {
+						this->_Alloc.deallocate(this->_M_start, this->capacity());
+					}
+
+					this->_M_start = new_start;
+					this->_M_finish = this->_M_start + old_size;
+					this->_M_end_of_storage = this->_M_start + new_size;
+				}
+
+				for (; this->size() != n; this->_M_finish++) {
+					*this->_M_finish = val;
+				}
+			}
 		}
 
 		size_type capacity() const {
@@ -106,29 +149,29 @@ namespace ft {
 		void reserve(size_type n) {
 			if (n > this->capacity()) {
 				size_type old_size = this->size();
-				pointer new_start = _Alloc.allocate(n);
+				pointer new_start = this->_Alloc.allocate(n);
 				pointer new_p = new_start;
-				pointer old_p = _M_start;
+				pointer old_p = this->_M_start;
 
 				for (size_type i = 0; i < old_size; i++) {
-					_Alloc.construct(new_p, *old_p);
+					this->_Alloc.construct(new_p, *old_p);
 					old_p++;
 					new_p++;
 				}
 
-				old_p = _M_start;
+				old_p = this->_M_start;
 				for (size_type i = 0; i < old_size; i++) {
-					_Alloc.destroy(old_p);
+					this->_Alloc.destroy(old_p);
 					old_p++;
 				}
 
-				if (_M_start) {
-					_Alloc.deallocate(_M_start, _M_end_of_storage - _M_start);
+				if (this->_M_start) {
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
 				}
 
-				_M_start = new_start;
-				_M_finish = new_start + old_size;
-				_M_end_of_storage = new_start + n;
+				this->_M_start = new_start;
+				this->_M_finish = new_start + old_size;
+				this->_M_end_of_storage = new_start + n;
 			}
 		}
 
