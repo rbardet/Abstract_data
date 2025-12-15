@@ -286,6 +286,16 @@ namespace ft {
 			this->_M_finish = it;
 			return first;
 		}
+		
+		void clear() {
+			pointer head = this->_M_start;
+			while (head != this->_M_finish) {
+				this->_Alloc.destroy(head);
+				head = 0;
+				head++;
+			}
+			this->_M_finish = this->_M_start;
+		}
 
 		//allocator
 
