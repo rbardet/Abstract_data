@@ -37,9 +37,8 @@ namespace ft {
 				this->_M_finish = this->_M_start;
 				this->_M_end_of_storage = this->_M_start + n;
 				pointer p = this->_M_start;
-				while(p != this->_M_end_of_storage) {
+				for(; p != this->_M_end_of_storage; p++) {
 					this->_Alloc.construct(p, val);
-					p++;
 					this->_M_finish++;
 				}
 			}
@@ -88,6 +87,35 @@ namespace ft {
 			return this->size() <= 0;
 		}
 
+		void reserve(size_type n) {
+			if (n > this->capacity()) {
+				size_type old_size = this->size();
+				pointer new_start = _Alloc.allocate(n);
+				pointer new_p = new_start;
+				pointer old_p = _M_start;
+
+				for (size_type i = 0; i < old_size; i++) {
+					_Alloc.construct(new_p, *old_p);
+					old_p++;
+					new_p++;
+				}
+
+				old_p = _M_start;
+				for (size_type i = 0; i < old_size; i++) {
+					_Alloc.destroy(old_p);
+					old_p++;
+				}
+
+				if (_M_start) {
+					_Alloc.deallocate(_M_start, _M_end_of_storage - _M_start);
+				}
+
+				_M_start = new_start;
+				_M_finish = new_start + old_size;
+				_M_end_of_storage = new_start + n;
+			}
+		}
+
 		//element access
 
 		reference operator[](size_type n) {
@@ -122,7 +150,6 @@ namespace ft {
 			return *this->_M_start;
 		}
 
-
 		reference back() {
 			return *(this->_M_finish - 1);
 		}
@@ -137,6 +164,23 @@ namespace ft {
 		
 		const value_type* data() const {
 			return this->_M_start;
+		}
+
+		//modifiers
+
+		void push_back (const value_type& val) {
+			if (this->_M_finish >= this->_M_end_of_storage) {
+				size_type new_size = this->capacity() * 2;
+				if (new_size == 0) {
+					new_size = 2; 
+				}
+				this->reserve(new_size);
+			}
+
+			std::cout << this->_M_finish << std::endl;
+			std::cout << this->_M_end_of_storage << std::endl;
+			*this->_M_finish = val;
+			this->_M_finish++;
 		}
 
 		//allocator
