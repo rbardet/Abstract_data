@@ -23,22 +23,24 @@ namespace ft {
 		explicit vector(
 			const allocator_type &alloc = allocator_type()
 		) :
-		_M_start(NULL), _M_finish(NULL), _M_end_of_storage(NULL), _Alloc(alloc) {}
+		_M_start(0), _M_finish(0), _M_end_of_storage(0), _Alloc(alloc) {}
 
 		explicit vector(
 			size_type n,
 			const value_type &val = value_type(),
 			const allocator_type &alloc = allocator_type()
 		) :
-		_Alloc(alloc)
+		_M_start(0), _M_finish(0), _M_end_of_storage(0), _Alloc(alloc)
 		{
 			if (n > 0) {
 				this->_M_start = _Alloc.allocate(n);
-				this->_M_finish = this->_M_start + n;
-				this->_M_end_of_storage = this->_M_finish;
-
-				for(size_type i=0; i < n; i++) {
-					this->_M_start[i] = val;
+				this->_M_finish = this->_M_start;
+				this->_M_end_of_storage = this->_M_start + n;
+				pointer p = this->_M_start;
+				while(p != this->_M_end_of_storage) {
+					this->_Alloc.construct(p, val);
+					p++;
+					this->_M_finish++;
 				}
 			}
 		}
@@ -51,7 +53,17 @@ namespace ft {
 		}
 
 		~vector() {
-			this->_Alloc.deallocate(this->_M_start, this->size());
+			if (this->size() <= 0) return ;
+
+			pointer p = this->_M_start;
+			while (p != this->_M_finish) {
+				this->_Alloc.destroy(p);
+				p++;
+			}
+
+			if (this->_M_start) {
+				this->_Alloc.deallocate(this->_M_start, this->capacity());
+			}
 		}
 
 		//Capacity
@@ -64,8 +76,16 @@ namespace ft {
 			return this->_M_end_of_storage - this->_M_start;
 		}
 
+		void resize(size_type n, value_type val = value_type()) {
+			(void)n, val;
+		}
+
 		size_type capacity() const {
 			return this->_M_end_of_storage - this->_M_start;
+		}
+
+		bool empty() const {
+			return this->size() <= 0;
 		}
 
 		//element access
