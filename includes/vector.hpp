@@ -131,6 +131,20 @@ namespace ft {
 			return *(this->_M_finish - 1);
 		}
 
+		value_type* data() {
+			return this->_M_start;
+		}
+		
+		const value_type* data() const {
+			return this->_M_start;
+		}
+
+		//allocator
+
+		allocator_type get_allocator() const {
+			return this->_Alloc;
+		}
+
 		protected:
 			pointer _M_start;
 			pointer _M_finish;
