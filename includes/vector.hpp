@@ -149,7 +149,6 @@ namespace ft {
 
 		void reserve(size_type n) {
 			if (n > this->capacity()) {
-				std::cout << n << " : NNNNNNN" << std::endl;
 				size_type old_size = this->size();
 				pointer new_start = this->_Alloc.allocate(n);
 				pointer new_p = new_start;
@@ -301,6 +300,55 @@ namespace ft {
 
 		allocator_type get_allocator() const {
 			return this->_Alloc;
+		}
+
+
+		//operator overload
+
+		bool operator==(const vector& rhs) {
+			if (this->size() == rhs.size()) {
+				for (size_type i = 0; i < this->size(); i++) {
+					if (this->_M_start[i] != rhs[i]) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
+		bool operator!=(const vector& rhs) {
+			if (*this == rhs) return false;
+			return true;
+		}
+
+		bool operator<(const vector& rhs) {
+			size_type lim;
+			if (this->size() > rhs.size()) lim = rhs.size();
+			else lim = this->size();
+
+			for (size_type i = 0; i < lim; i++) {
+				if (this->_M_start[i] < rhs[i]) return true;
+				if (this->_M_start[i] > rhs[i]) return false;
+			}
+
+			if (this->size() < rhs.size()) return true;
+			return false;
+		}
+
+		bool operator<=(const vector& rhs) {
+			if (*this < rhs || *this == rhs) return true;
+			return false;
+		}
+
+		bool operator>(const vector& rhs) {
+			if (*this < rhs) return false;
+			return true;
+		}
+
+		bool operator>= (const vector& rhs) {
+			if (*this > rhs || *this == rhs) return true;
+			return false;
 		}
 
 		protected:
