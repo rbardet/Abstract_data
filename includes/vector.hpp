@@ -23,6 +23,7 @@ namespace ft {
 			typedef const_pointer const_iterator;
 			typedef std::reverse_iterator<iterator> reverse_iterator;
 			typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+			typedef ptrdiff_t difference_type;
 			typedef size_t size_type;
 
 		//constructor
@@ -49,6 +50,26 @@ namespace ft {
 				}
 			}
 		}
+
+		template <class InputIterator>
+		vector(
+			InputIterator first,
+			InputIterator last,
+			const allocator_type& alloc = allocator_type()
+		) :
+		_Alloc(alloc)
+		{
+			pointer p = this->_Alloc.allocate(last - first);
+			this->_M_start = p;
+			this->_M_finish = p + (last - first);
+			this->_M_finish = p + (last - first);
+			while (first != last) {
+				this->_Alloc.construct(p, *first);
+				first++;
+				p++;
+			}
+		}
+
 
 		vector (const vector& x) :
 		_M_start(0), _M_finish(0), _M_end_of_storage(0), _Alloc(x._Alloc)
@@ -235,6 +256,28 @@ namespace ft {
 		const value_type* data() const { return this->_M_start; }
 
 		//modifiers
+
+		void assign(size_type n, const value_type& val) {
+			if (n > this->capacity()) {
+				while (this->_M_finish != this->_M_start) {
+					this->_M_finish--;
+					this->_Alloc.destroy(this->_M_finish);
+				}
+
+				if (this->_M_start) {
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
+				}
+				this->_M_start = this->_Alloc.allocate(n);
+				this->_M_end_of_storage = this->_M_start + n;
+			}
+
+			this->_M_finish = this->_M_start + n;
+			pointer p = this->_M_start;
+			while (p != this->_M_finish) {
+				this->_Alloc.construct(p, val);
+				p++;
+			}
+		}
 
 		void push_back (const value_type& val) {
 			if (this->_M_finish >= this->_M_end_of_storage) {
