@@ -8,6 +8,7 @@
 // i refer to cpp.com
 // https://cplusplus.com/reference/vector/vector/
 
+
 namespace ft {
 	template< typename T, typename _alloc = std::allocator<T> >
 	class vector {
@@ -49,9 +50,33 @@ namespace ft {
 			}
 		}
 
-		vector& operator=(const vector &x) {
-			if (*this != &x) {
+		vector (const vector& x) :
+		_M_start(0), _M_finish(0), _M_end_of_storage(0), _Alloc(x._Alloc)
+		{
+			*this = x;
+		}
 
+		vector& operator=(const vector &x) {
+			if (*this != x) {
+				while (this->_M_finish != this->_M_start) {
+					this->_M_finish--;
+					this->_Alloc.destroy(this->_M_finish);
+				}
+
+				if (this->_M_start) {
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
+				}
+
+				pointer p = this->_Alloc.allocate(x.capacity());
+				pointer head = p;
+				for (size_type i = 0; i < x.size(); i++) {
+					this->_Alloc.construct(p, x[i]);
+					p++;
+				}
+
+				this->_M_start = head;
+				this->_M_finish = head + x.size();
+				this->_M_end_of_storage = head + x.capacity();
 			}
 			return *this;
 		}
@@ -59,37 +84,40 @@ namespace ft {
 		~vector() {
 			if (this->size() <= 0) return ;
 
-			pointer p = this->_M_start;
-			while (p != this->_M_finish) {
-				this->_Alloc.destroy(p);
-				p++;
+			while (this->_M_finish != this->_M_finish) {
+				this->_M_finish--;
+				this->_Alloc.destroy(this->_M_finish);
 			}
 
 			if (this->_M_start) {
 				this->_Alloc.deallocate(this->_M_start, this->capacity());
 			}
+
 		}
 
 		//iterators
 
 		iterator begin() { return _M_start; }
+
 		const_iterator begin() const { return _M_start; }
+		
 		iterator end() { return _M_finish; }
+		
 		const_iterator end() const { return _M_finish; }
+		
 		reverse_iterator rbegin() { return reverse_iterator(end()); }
+		
 		const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
+		
 		reverse_iterator rend() { return reverse_iterator(begin()); }
+		
 		const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
 		//Capacity
 
-		size_type size() const {
-			return this->_M_finish - this->_M_start;
-		}
+		size_type size() const { return this->_M_finish - this->_M_start; }
 
-		size_type max_size() const {
-			return this->_M_end_of_storage - this->_M_start;
-		}
+		size_type max_size() const { return this->_M_end_of_storage - this->_M_start; }
 
 		void resize(size_type n, value_type val = value_type()) {
 			if (n < this->size()) {
@@ -139,13 +167,9 @@ namespace ft {
 			}
 		}
 
-		size_type capacity() const {
-			return this->_M_end_of_storage - this->_M_start;
-		}
+		size_type capacity() const { return this->_M_end_of_storage - this->_M_start; }
 
-		bool empty() const {
-			return this->size() <= 0;
-		}
+		bool empty() const { return this->size() <= 0; }
 
 		void reserve(size_type n) {
 			if (n > this->capacity()) {
@@ -178,13 +202,9 @@ namespace ft {
 
 		//element access
 
-		reference operator[](size_type n) {
-			return this->_M_start[n];
-		}
+		reference operator[](size_type n) { return this->_M_start[n]; }
 		
-		const_reference operator[](size_type n) const {
-			return this->_M_start[n];
-		}
+		const_reference operator[](size_type n) const { return this->_M_start[n]; }
 
 		reference at(size_type n) {
 			if (n >= this->size()) {
@@ -202,29 +222,17 @@ namespace ft {
 			return this->_M_start[n];
 		}
 		
-		reference front() {
-			return *this->_M_start;
-		}
+		reference front() { return *this->_M_start; }
 
-		const_reference front() const {
-			return *this->_M_start;
-		}
+		const_reference front() const { return *this->_M_start; }
 
-		reference back() {
-			return *this->_M_finish;
-		}
+		reference back() { return *this->_M_finish; }
 	
-		const_reference back() const {
-			return *this->_M_finish;
-		}
+		const_reference back() const { return *this->_M_finish; }
 
-		value_type* data() {
-			return this->_M_start;
-		}
+		value_type* data() { return this->_M_start; }
 		
-		const value_type* data() const {
-			return this->_M_start;
-		}
+		const value_type* data() const { return this->_M_start; }
 
 		//modifiers
 
@@ -285,7 +293,25 @@ namespace ft {
 			this->_M_finish = it;
 			return first;
 		}
-		
+
+		void swap(vector& x) {
+			pointer p = this->_M_start;
+			this->_M_start = x._M_start;
+			x._M_start = p;
+
+			p = this->_M_finish;
+			this->_M_finish = x._M_finish;
+			x._M_finish = p;
+
+			p = this->_M_end_of_storage;
+			this->_M_end_of_storage = x._M_end_of_storage;
+			x._M_end_of_storage = p;
+
+			allocator_type _A = this->_Alloc;
+			this->_Alloc = x._Alloc;
+			x._Alloc = _A;
+		}
+
 		void clear() {
 			pointer head = this->_M_start;
 			while (head != this->_M_finish) {
@@ -298,9 +324,7 @@ namespace ft {
 
 		//allocator
 
-		allocator_type get_allocator() const {
-			return this->_Alloc;
-		}
+		allocator_type get_allocator() const { return this->_Alloc; }
 
 		protected:
 			pointer _M_start;
@@ -334,7 +358,7 @@ namespace ft {
 	template <class T, class Alloc>
 	bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
 		typename  ft::vector<T, Alloc>::size_type lim;
-		if (lhs.size() > rhs.size())
+		if (lhs.size() > rhs.size()) 
 			lim = rhs.size();
 		else
 			lim = lhs.size();
@@ -366,11 +390,15 @@ namespace ft {
 	}
 
 	template <class T, class Alloc>
-	bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+	bool operator>=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
 		if (lhs > rhs || lhs == rhs)
 			return true;
 		return false;
 	}
+
+	template <class T, class Alloc>
+	void swap(vector<T,Alloc>& x, vector<T,Alloc>& y) { x.swap(y); }
+
 }
 
 #endif
