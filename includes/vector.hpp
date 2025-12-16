@@ -73,10 +73,15 @@ namespace ft {
 		) :
 		_Alloc(alloc)
 		{
-			pointer p = this->_Alloc.allocate(last - first);
+			size_type n = 0;
+			for (InputIterator it = first; it != last; it++) {
+				n++;
+			}
+
+			pointer p = this->_Alloc.allocate(n);
 			this->_M_start = p;
-			this->_M_finish = p + (last - first);
-			this->_M_finish = p + (last - first);
+			this->_M_finish = p + n;
+			this->_M_finish = p + n;
 			while (first != last) {
 				this->_Alloc.construct(p, *first);
 				first++;
@@ -159,7 +164,7 @@ namespace ft {
 				pointer p = this->_M_start + n;
 				for (size_type i = n; i < this->size(); i++) {
 					this->_Alloc.destroy(p);
-					*p = 0;
+					p = 0;
 					p++;
 				}
 
