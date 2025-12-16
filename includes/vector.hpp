@@ -302,61 +302,75 @@ namespace ft {
 			return this->_Alloc;
 		}
 
-
-		//operator overload
-
-		bool operator==(const vector& rhs) {
-			if (this->size() == rhs.size()) {
-				for (size_type i = 0; i < this->size(); i++) {
-					if (this->_M_start[i] != rhs[i]) {
-						return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		}
-
-		bool operator!=(const vector& rhs) {
-			if (*this == rhs) return false;
-			return true;
-		}
-
-		bool operator<(const vector& rhs) {
-			size_type lim;
-			if (this->size() > rhs.size()) lim = rhs.size();
-			else lim = this->size();
-
-			for (size_type i = 0; i < lim; i++) {
-				if (this->_M_start[i] < rhs[i]) return true;
-				if (this->_M_start[i] > rhs[i]) return false;
-			}
-
-			if (this->size() < rhs.size()) return true;
-			return false;
-		}
-
-		bool operator<=(const vector& rhs) {
-			if (*this < rhs || *this == rhs) return true;
-			return false;
-		}
-
-		bool operator>(const vector& rhs) {
-			if (*this < rhs) return false;
-			return true;
-		}
-
-		bool operator>= (const vector& rhs) {
-			if (*this > rhs || *this == rhs) return true;
-			return false;
-		}
-
 		protected:
 			pointer _M_start;
 			pointer _M_finish;
 			pointer _M_end_of_storage;
 			allocator_type _Alloc;
 	};
+
+	//operator overload
+
+	template <class T, class Alloc>
+	bool operator==(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs.size() == rhs.size()) {
+			for (typename  ft::vector<T, Alloc>::size_type i = 0; i < lhs.size(); i++) {
+				if (lhs[i] != rhs[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	template <class T, class Alloc>
+	bool operator!=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs == rhs)
+			return false;
+		return true;
+	}
+
+	template <class T, class Alloc>
+	bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		typename  ft::vector<T, Alloc>::size_type lim;
+		if (lhs.size() > rhs.size())
+			lim = rhs.size();
+		else
+			lim = lhs.size();
+		
+		for (typename ft::vector<T, Alloc>::size_type i = 0; i < lim; i++) {
+			if (lhs[i] < rhs[i])
+				return true;
+			if (lhs[i] > rhs[i])
+				return false;
+		}
+
+		if (lhs.size() < rhs.size())
+			return true;
+		return false;
+	}
+
+	template <class T, class Alloc>
+	bool operator<=(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs < rhs || lhs == rhs)
+			return true;
+		return false;
+	}
+
+	template <class T, class Alloc>
+	bool operator>(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs < rhs || lhs == rhs)
+			return false;
+		return true;
+	}
+
+	template <class T, class Alloc>
+	bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs > rhs || lhs == rhs)
+			return true;
+		return false;
+	}
 }
 
 #endif
