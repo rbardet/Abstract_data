@@ -9,6 +9,20 @@
 // https://cplusplus.com/reference/vector/vector/
 
 
+template<bool Cond, class T = void>
+struct enable_if {};
+
+template<class T>
+struct enable_if<true, T> { typedef T type; };
+
+template <typename T> struct is_integral { static const bool value = false; };
+template <> struct is_integral<int> { static const bool value = true; };
+template <> struct is_integral<long> { static const bool value = true; };
+template <> struct is_integral<unsigned int> { static const bool value = true; };
+template <> struct is_integral<unsigned long> { static const bool value = true; };
+template <> struct is_integral<char> { static const bool value = true; };
+template <> struct is_integral<bool> { static const bool value = true; };
+
 namespace ft {
 	template< typename T, typename _alloc = std::allocator<T> >
 	class vector {
@@ -296,6 +310,155 @@ namespace ft {
 			this->_M_finish--;
 			this->_Alloc.destroy(this->_M_finish);
 		}
+
+		iterator insert(iterator position, const value_type& val) {
+			size_type pos_index = position - this->_M_start;
+
+			if (this->size() == this->capacity()) {
+				size_type new_cap = (this->capacity() * 2) + 1;
+				pointer new_start = this->_Alloc.allocate(new_cap);
+				pointer new_finish = new_start;
+
+				for (size_type i = 0; i < pos_index; i++) {
+					this->_Alloc.construct(new_start + i, this->_M_start[i]);
+					new_finish++;
+				}
+
+				this->_Alloc.construct(new_start + pos_index, val);
+				new_finish++;
+
+				for (size_type i = pos_index; i < this->size(); i++) {
+					this->_Alloc.construct(new_finish, this->_M_start[i]);
+					new_finish++;
+				}
+
+				for (pointer p = this->_M_start; p != this->_M_finish; p++)
+					this->_Alloc.destroy(p);
+				if (this->_M_start)
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
+
+				this->_M_start = new_start;
+				this->_M_finish = new_finish;
+				this->_M_end_of_storage = new_start + new_cap;
+
+			} else {
+				iterator it = this->_M_finish;
+				while (it != this->_M_start + pos_index) {
+					this->_Alloc.construct(it, *(it - 1));
+					it++;
+				}
+				this->_Alloc.construct(this->_M_start + pos_index, val);
+				this->_M_finish++;
+			}
+
+			return this->_M_start + pos_index;
+		}
+
+
+		void insert(iterator position, size_type n, const value_type& val) {
+			if (n == 0)
+				return;
+
+			size_type pos_index = position - this->_M_start;
+
+			if (this->size() + n > this->capacity()) {
+				size_type new_cap = (this->capacity() * 2) + 1;
+				pointer new_start = this->_Alloc.allocate(new_cap);
+				pointer new_finish = new_start;
+
+				for (size_type i = 0; i < pos_index; i++) {
+					this->_Alloc.construct(new_start + i, this->_M_start[i]);
+					new_finish++;
+				}
+
+				for (size_type i = 0; i < n; i++) {
+					this->_Alloc.construct(new_start + pos_index + i, val);
+					new_finish++;
+				}
+
+				for (size_type i = pos_index; i < this->size(); i++) {
+					this->_Alloc.construct(new_finish, this->_M_start[i]);
+					new_finish++;
+				}
+
+				for (pointer p = this->_M_start; p != this->_M_finish; p++)
+					this->_Alloc.destroy(p);
+				if (this->_M_start)
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
+
+				this->_M_start = new_start;
+				this->_M_finish = new_finish;
+				this->_M_end_of_storage = new_start + new_cap;
+
+			} else {
+				for (iterator it = this->_M_finish - 1; it >= this->_M_start + pos_index; it--) {
+					this->_Alloc.construct(it + n, *it);
+					this->_Alloc.destroy(it);
+				}
+				for (size_type i = 0; i < n; i++) {
+					this->_Alloc.construct(this->_M_start + pos_index + i, val);
+				}
+				this->_M_finish += n;
+			}
+		}
+
+		template <class InputIterator>
+		typename enable_if<!is_integral<InputIterator>::value, void>::type
+		insert(iterator position, InputIterator first, InputIterator last) {
+			size_type n = 0;
+			for (InputIterator it = first; it != last; ++it)
+				n++;
+
+			if (n == 0)
+				return;
+
+			size_type pos_index = position - this->_M_start;
+
+			if (this->size() + n > this->capacity()) {
+				size_type new_cap = (this->capacity() * 2) + 1;
+				pointer new_start = this->_Alloc.allocate(new_cap);
+				pointer new_finish = new_start;
+
+				for (size_type i = 0; i < pos_index; ++i) {
+					this->_Alloc.construct(new_start + i, this->_M_start[i]);
+					new_finish++;
+				}
+
+				for (InputIterator it = first; it != last; ++it) {
+					this->_Alloc.construct(new_finish, *it);
+					new_finish++;
+				}
+
+				for (size_type i = pos_index; i < this->size(); ++i) {
+					this->_Alloc.construct(new_finish, this->_M_start[i]);
+					new_finish++;
+				}
+
+				for (pointer p = this->_M_start; p != this->_M_finish; ++p)
+					this->_Alloc.destroy(p);
+				if (this->_M_start)
+					this->_Alloc.deallocate(this->_M_start, this->capacity());
+
+				this->_M_start = new_start;
+				this->_M_finish = new_finish;
+				this->_M_end_of_storage = new_start + new_cap;
+
+			} else {
+				for (iterator it = this->_M_finish - 1; it >= this->_M_start + pos_index; --it) {
+					this->_Alloc.construct(it + n, *it);
+					this->_Alloc.destroy(it);
+				}
+
+				iterator it_pos = this->_M_start + pos_index;
+				for (InputIterator it = first; it != last; ++it) {
+					this->_Alloc.construct(it_pos, *it);
+					it_pos++;
+				}
+
+				this->_M_finish += n;
+			}
+		}
+
 
 		iterator erase(iterator position) {
 			iterator it = position;
